@@ -13,6 +13,9 @@ const { initDatabase } = require('./config/database');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy (required when behind nginx)
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
@@ -52,6 +55,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   name: 'tinkerer_session',
+  proxy: true, // Required when behind nginx
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
