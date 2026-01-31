@@ -27,8 +27,9 @@ COPY --chown=nodejs:nodejs public ./public
 COPY --chown=nodejs:nodejs package.json ./
 
 # Security: Set proper permissions
+# Directories need 755 (executable), files need 644
 RUN chmod -R 755 /app && \
-    chmod -R 644 /app/public/*
+    find /app/public -type f -exec chmod 644 {} \;
 
 # Switch to non-root user
 USER nodejs
