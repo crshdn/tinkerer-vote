@@ -12,9 +12,9 @@ services:
     env_file:
       - .env
     
-    # Expose to localhost only (for nginx reverse proxy)
+    # Expose to internal network (for nginx reverse proxy on proxmox)
     ports:
-      - "127.0.0.1:3000:3000"
+      - "10.0.0.12:3000:3000"
     
     # Map host.docker.internal for Linux (required for DB access)
     extra_hosts:
