@@ -16,6 +16,10 @@ services:
     ports:
       - "127.0.0.1:3000:3000"
     
+    # Map host.docker.internal for Linux (required for DB access)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    
     # Security settings
     security_opt:
       - no-new-privileges:true
