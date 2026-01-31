@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tinkerer Vote — Project Leaderboard</title>
+  <meta name="description" content="Vote on the next Tinkerer Club project. Members only.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <span class="logo-bracket">[</span>
+        <span class="logo-text">tinkerer.vote</span>
+        <span class="logo-bracket">]</span>
+      </div>
+      <div class="user-section" id="userSection">
+        <!-- Populated by JS -->
+      </div>
+    </header>
+
+    <!-- Error Banner -->
+    <div class="error-banner" id="errorBanner" style="display: none;">
+      <span class="error-icon">!</span>
+      <span class="error-message" id="errorMessage"></span>
+      <button class="error-close" onclick="hideError()">&times;</button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Hero Section (shown when logged out) -->
+      <section class="hero" id="heroSection">
+        <div class="hero-terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span class="terminal-title">vote.sh</span>
+          </div>
+          <div class="terminal-body">
+            <p class="terminal-line"><span class="prompt">$</span> <span class="cmd">whoami</span></p>
+            <p class="terminal-output">tinkerer_club_member</p>
+            <p class="terminal-line"><span class="prompt">$</span> <span class="cmd">./vote --help</span></p>
+            <p class="terminal-output">Vote on the next project we build together.</p>
+            <p class="terminal-output">Submit ideas. Cast votes. Ship winners.</p>
+            <p class="terminal-line"><span class="prompt">$</span> <span class="cmd">./authenticate</span></p>
+            <p class="terminal-output blink">Waiting for Discord login...</p>
+          </div>
+        </div>
+        <a href="/auth/login" class="btn btn-primary btn-large">
+          <span class="btn-icon">></span>LOGIN_WITH_DISCORD
+        </a>
+        <p class="hero-note">Members only. Verifies your Tinkerer Club membership.</p>
+      </section>
+
+      <!-- Stats Bar -->
+      <section class="stats-bar" id="statsBar" style="display: none;">
+        <div class="stat">
+          <span class="stat-value" id="statIdeas">0</span>
+          <span class="stat-label">ideas</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="statVotes">0</span>
+          <span class="stat-label">votes</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="statMembers">0</span>
+          <span class="stat-label">members</span>
+        </div>
+      </section>
+
+      <!-- Submit Idea Section -->
+      <section class="submit-section" id="submitSection" style="display: none;">
+        <button class="btn btn-secondary" id="toggleSubmitBtn" onclick="toggleSubmitForm()">
+          <span class="btn-icon">+</span>SUBMIT_IDEA
+        </button>
+        <form class="submit-form" id="submitForm" style="display: none;" onsubmit="submitIdea(event)">
+          <div class="form-group">
+            <label for="ideaTitle">title:</label>
+            <input type="text" id="ideaTitle" name="title" placeholder="What should we build?" required minlength="3" maxlength="200">
+          </div>
+          <div class="form-group">
+            <label for="ideaDescription">description:</label>
+            <textarea id="ideaDescription" name="description" placeholder="Describe the project idea..." rows="4" maxlength="2000"></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+              <span class="btn-icon">></span>SUBMIT
+            </button>
+            <button type="button" class="btn btn-ghost" onclick="toggleSubmitForm()">CANCEL</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Leaderboard -->
+      <section class="leaderboard" id="leaderboard">
+        <h2 class="section-title">
+          <span class="title-prefix">./</span>leaderboard<span class="blink">_</span>
+        </h2>
+        <div class="ideas-list" id="ideasList">
+          <!-- Populated by JS -->
+          <div class="loading" id="loadingIndicator">
+            <span class="loading-text">Loading ideas</span>
+            <span class="loading-dots"></span>
+          </div>
+        </div>
+        <div class="empty-state" id="emptyState" style="display: none;">
+          <p class="empty-icon">&gt;_</p>
+          <p class="empty-text">No ideas yet. Be the first to submit one!</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p class="footer-text">
+        <span class="footer-prefix">$</span> 
+        <a href="https://tinkerer.club" target="_blank" rel="noopener">tinkerer.club</a> 
+        <span class="footer-separator">|</span>
+        <a href="/terms.html">terms</a>
+        <span class="footer-separator">|</span>
+        <a href="/privacy.html">privacy</a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal" id="editModal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Idea</h3>
+        <button class="modal-close" onclick="closeEditModal()">&times;</button>
+      </div>
+      <form id="editForm" onsubmit="updateIdea(event)">
+        <input type="hidden" id="editIdeaId">
+        <div class="form-group">
+          <label for="editTitle">title:</label>
+          <input type="text" id="editTitle" name="title" required minlength="3" maxlength="200">
+        </div>
+        <div class="form-group">
+          <label for="editDescription">description:</label>
+          <textarea id="editDescription" name="description" rows="4" maxlength="2000"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <span class="btn-icon">></span>UPDATE
+          </button>
+          <button type="button" class="btn btn-ghost" onclick="closeEditModal()">CANCEL</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
